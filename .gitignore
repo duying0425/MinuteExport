@@ -7,6 +7,9 @@ output/
 # Edge/Chrome 加载插件时自动生成
 extension/_metadata/
 
+# 打包产物
+extension.zip
+
 # Python
 __pycache__/
 *.pyc

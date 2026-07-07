@@ -40,13 +40,14 @@ extension/
 ├── popup.html       # 弹窗 UI
 ├── popup.js         # 弹窗逻辑
 ├── background.js    # service worker：抓页面、调 API、下载
+├── content.js       # content script：读取当前页 URL
+├── rules_referer.json # declarativeNetRequest 规则
 └── icons/
-    └── icon.svg     # 图标
+    └── icon.png     # 图标（256x256 PNG）
 ```
 
 ## 已知限制
 
 - 仅在已登录飞书的浏览器中可用
 - 飞书内部 API 变更可能导致失效
-- SVG 图标在某些旧版 Chrome 可能不显示，可自行替换为 PNG
 - service worker 在 MV3 下不常驻，每次点击会重新启动（不影响功能）

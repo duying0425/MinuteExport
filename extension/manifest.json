@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "飞书妙记导出",
+  "name": "Feishu Minutes Exporter",
   "version": "1.2.0",
-  "description": "一键导出飞书妙记转写内容为 Markdown，自动用会议名作为文件名。",
+  "description": "Export Feishu Minutes (飞书妙记) meeting transcripts to Markdown with one click. The meeting name is used as the filename.",
   "permissions": ["cookies", "downloads", "declarativeNetRequest"],
   "host_permissions": ["https://*.feishu.cn/*"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "飞书妙记导出",
+    "default_title": "Feishu Minutes Exporter",
     "default_icon": "icons/icon.png"
   },
   "background": {

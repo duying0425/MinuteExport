@@ -135,7 +135,14 @@ MinuteExport/
 │   ├── popup.html         # 弹窗 UI
 │   ├── popup.js           # 弹窗逻辑
 │   ├── rules_referer.json # declarativeNetRequest 规则（注入 Referer）
-│   ├── icons/icon.svg     # 图标
+│   ├── icons/icon.png     # 图标（256x256 PNG）
 │   └── README.md          # 插件详细说明
+├── store/                 # Edge Add-ons 商店提交素材
+│   ├── SUBMISSION.md      # 商店提交文本汇总（描述、关键词、权限说明、审核备注）
+│   ├── PRIVACY.md         # 隐私政策
+│   ├── store_logo_300.png # 商店 logo（300x300）
+│   ├── promo_small_440x280.png   # 小推广图（440x280）
+│   ├── promo_large_1400x560.png  # 大推广图（1400x560）
+│   └── screenshot1_1280x800.png  # 商店截图（1280x800）
 └── README.md
 ```
