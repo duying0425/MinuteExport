@@ -5,9 +5,10 @@
 ## 功能
 
 - 根据妙记链接提取 `object_token`
+- 调用 `/space/api/meta/`（type=28）获取会议名作为文件名
 - 调用 `/minutes/api/speakers` 获取说话人映射
 - 调用 `/minutes/api/subtitles_v2` 获取分段字幕
-- 输出带时间戳和说话人的 Markdown 文件（`meeting.md`）
+- 输出带时间戳和说话人的 Markdown 文件到 `output/` 目录，文件名即会议名
 
 ## 环境要求
 
@@ -41,7 +42,15 @@
 python export.py https://<your-tenant>.feishu.cn/minutes/<token>
 ```
 
-输出文件：`meeting.md`
+输出文件：`output/<会议名>.md`（会议名通过 `/space/api/meta/` 接口获取）
+
+可选第二个参数指定输出文件名：
+
+```bash
+python export.py https://xxx.feishu.cn/minutes/xxxx 自定义名.md
+```
+
+文件仍会保存到 `output/` 目录下。
 
 ## 示例输出
 
@@ -71,6 +80,8 @@ MinuteExport/
 ├── export.py              # 主脚本
 ├── cookies.json           # 真实 cookie（不提交）
 ├── cookies.example.json   # cookie 模板
-├── meeting.md             # 导出结果（不提交）
+├── output/                # 导出结果目录（不提交）
+│   └── <会议名>.md
+├── extension/             # 浏览器插件
 └── README.md
 ```
