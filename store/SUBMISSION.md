@@ -6,7 +6,7 @@ This folder contains all assets and texts required for submitting the **Feishu M
 
 | File | Purpose | Specs |
 |---|---|---|
-| `store_logo_300.png` | Extension logo | 300x300 PNG |
+| `../extension/icons/icon.png` | Extension logo (reused from extension) | 256x256 PNG |
 | `promo_small_440x280.png` | Small promotional tile | 440x280 PNG |
 | `promo_large_1400x560.png` | Large promotional tile | 1400x560 PNG |
 | `screenshot1_1280x800.png` | Screenshot | 1280x800 PNG |
