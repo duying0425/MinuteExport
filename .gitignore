@@ -4,6 +4,9 @@ cookies.json
 # 导出结果目录
 output/
 
+# Edge/Chrome 加载插件时自动生成
+extension/_metadata/
+
 # Python
 __pycache__/
 *.pyc

@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "Referer",
+          "operation": "set",
+          "value": "https://reachauto.feishu.cn/minutes/"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||feishu.cn/minutes/api/",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 1,
+    "action": {
+      "type": "modifyHeaders",
+      "requestHeaders": [
+        {
+          "header": "Referer",
+          "operation": "set",
+          "value": "https://reachauto.feishu.cn/minutes/"
+        }
+      ]
+    },
+    "condition": {
+      "urlFilter": "||feishu.cn/space/api/",
+      "resourceTypes": ["xmlhttprequest"]
+    }
+  }
+]

@@ -5,7 +5,8 @@
 // 3. 调用 /minutes/api/speakers 和 /minutes/api/subtitles_v2
 // 4. 拼装 Markdown，用 chrome.downloads.download 保存
 
-const BASE_HOST_RE = /^https:\/\/([^/]+\.feishu\.cn)/;
+// 捕获完整的 origin（含 https://），避免 new URL() 报错
+const BASE_HOST_RE = /^(https:\/\/[^/]+\.feishu\.cn)/;
 
 function getToken(url) {
   const m = url.match(/\/minutes\/([a-zA-Z0-9]+)/);
@@ -137,8 +138,9 @@ async function exportMinutes(url) {
   const md = buildMarkdown(meetingName, paragraphToSpeaker, speakerMap, paragraphs);
 
   const filename = (meetingName ? safeFilename(meetingName) : 'meeting') + '.md';
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const dataUrl = URL.createObjectURL(blob);
+  // service worker 里没有 URL.createObjectURL / Blob，
+  // 用 data: URL 直接嵌入内容（UTF-8 百分号编码）
+  const dataUrl = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(md);
 
   await new Promise((resolve, reject) => {
     chrome.downloads.download(
