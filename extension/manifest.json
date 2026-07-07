@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "飞书妙记导出",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "一键导出飞书妙记转写内容为 Markdown，自动用会议名作为文件名。",
   "permissions": ["cookies", "downloads", "declarativeNetRequest"],
   "host_permissions": ["https://*.feishu.cn/*"],
@@ -13,6 +13,13 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://*.feishu.cn/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
   "icons": {
     "128": "icons/icon.svg"
   },
