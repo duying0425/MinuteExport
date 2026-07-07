@@ -1,0 +1,11 @@
+# 敏感：飞书登录态，切勿提交
+cookies.json
+
+# 导出结果
+meeting.md
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
