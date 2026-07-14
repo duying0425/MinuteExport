@@ -84,6 +84,14 @@ python export.py https://xxx.feishu.cn/minutes/xxxx 自定义名.md
 5. 点击「导出为 Markdown」
 6. 文件下载到浏览器默认下载目录，文件名为会议名（如 `ADAS&RJ本田交流情报共享 のビデオ会議.md`）
 
+#### 三种触发导出的方式
+
+1. **弹窗导出**：点击工具栏图标 → 弹窗中粘贴链接 → 点击「导出为 Markdown」
+2. **详情页浮动按钮**：在妙记详情页（`/minutes/{token}`）右下角会自动出现「📥 导出妙记」按钮，点击即可导出
+3. **列表页直接下载**（v1.2.0 新增）：在妙记列表页（`/minutes/me`、`/minutes/home` 等）每条记录的操作菜单旁会注入一个下载图标按钮，点击后会自动打开对应妙记并下载，下载完成后自动关闭标签页
+   - 支持 `/minutes/{token}`（旧版）和 `/docx/{token}`（新版）两种链接类型
+   - `/docx/` 类型会自动点击「查看妙记/打开妙记」菜单项跳转到妙记详情页后触发下载
+
 ### 权限说明
 
 | 权限 | 用途 |
@@ -96,6 +104,41 @@ python export.py https://xxx.feishu.cn/minutes/xxxx 自定义名.md
 ### 修改代码后如何生效
 
 每次修改 `extension/` 下的文件后，需要去扩展管理页点对应卡片上的 ↻「重新加载」按钮，新代码才会生效。
+
+---
+
+## 测试
+
+项目内置单元测试，使用 Node.js 内置 `vm` 模块加载 `extension/` 下的实际源码进行测试，无需浏览器环境。
+
+### 运行测试
+
+```bash
+node tests/test.js
+```
+
+### 测试覆盖
+
+共 76 个用例，覆盖以下纯函数：
+
+| 文件 | 函数 | 用例数 | 说明 |
+| --- | --- | --- | --- |
+| `background.js` | `getToken` | 10 | URL 解析、各种链接格式、错误处理 |
+| `background.js` | `formatTime` | 10 | 毫秒转 `HH:MM:SS`、边界值、类型转换 |
+| `background.js` | `safeFilename` | 16 | Windows 非法字符替换、首尾清理、回退值 |
+| `background.js` | `buildMarkdown` | 9 | Markdown 拼装、空段落、说话人映射、多句子 |
+| `background.js` | `BASE_HOST_RE` | 4 | 飞书域名正则匹配 |
+| `content.js` | `isMinutesDetailPage` | 11 | 详情页识别、列表页排除、大小写 |
+| `content.js` | `isListPage` | 9 | 列表页识别 |
+| `content.js` | `getToken` | 4 | URL 解析（仅匹配 `/minutes/`） |
+| 一致性检查 | — | 2 | content.js 与 background.js 的 getToken 行为对比 |
+| 静态分析 | — | 6 | 已知问题与边界情况记录 |
+
+### 测试机制
+
+- 通过 `vm.createContext` 创建沙箱，模拟 `chrome`、`document`、`localStorage`、`location` 等浏览器环境
+- 在源码末尾注入导出语句，暴露内部纯函数供测试调用
+- 所有测试针对**真实源码**而非副本，源码修改后重跑即可验证
 
 ---
 
@@ -132,11 +175,14 @@ MinuteExport/
 ├── extension/             # 浏览器插件（MV3）
 │   ├── manifest.json      # 插件配置
 │   ├── background.js      # service worker：调 API、生成并下载 Markdown
+│   ├── content.js         # content script：浮动按钮 + 列表页直接下载按钮
 │   ├── popup.html         # 弹窗 UI
 │   ├── popup.js           # 弹窗逻辑
 │   ├── rules_referer.json # declarativeNetRequest 规则（注入 Referer）
 │   ├── icons/icon.png     # 图标（256x256 PNG）
 │   └── README.md          # 插件详细说明
+├── tests/                 # 单元测试
+│   └── test.js           # Node.js vm 沙箱测试（76 用例）
 ├── store/                 # Edge Add-ons 商店提交素材
 │   ├── SUBMISSION.md      # 商店提交文本汇总（描述、关键词、权限说明、审核备注）
 │   ├── PRIVACY.md         # 隐私政策
