@@ -5,12 +5,30 @@
 // 3. 调用 /minutes/api/speakers 和 /minutes/api/subtitles_v2
 // 4. 拼装 Markdown，用 chrome.downloads.download 保存
 
+function getMessage(key, fallback) {
+  if (typeof chrome !== 'undefined' && chrome.i18n && typeof chrome.i18n.getMessage === 'function') {
+    const msg = chrome.i18n.getMessage(key);
+    if (msg) return msg;
+  }
+  return fallback;
+}
+
+function getApiLanguage() {
+  if (typeof chrome !== 'undefined' && chrome.i18n && typeof chrome.i18n.getUILanguage === 'function') {
+    const lang = chrome.i18n.getUILanguage();
+    if (lang && lang.toLowerCase().startsWith('en')) {
+      return 'en_us';
+    }
+  }
+  return 'zh_cn';
+}
+
 // 捕获完整的 origin（含 https://），避免 new URL() 报错
 const BASE_HOST_RE = /^(https:\/\/[^/]+\.feishu\.cn)/;
 
 function getToken(url) {
   const m = url.match(/\/minutes\/([a-zA-Z0-9]+)/);
-  if (!m) throw new Error('无法从链接解析 object_token');
+  if (!m) throw new Error(getMessage('errParseTokenBg', '无法从链接解析 object_token'));
   return m[1];
 }
 
@@ -56,20 +74,23 @@ async function getMeetingName(baseUrl, token) {
 }
 
 async function getSpeakers(baseUrl, token) {
+  const defaultSpeaker = getMessage('speakerUnknown', '未知');
+  const lang = getApiLanguage();
   const data = await callApi(baseUrl, '/minutes/api/speakers', {
     size: 10000,
     translate_lang: 'default',
     object_token: token,
-    language: 'zh_cn',
+    language: lang,
   });
   const speakerMap = {};
   Object.entries(data.speaker_info_map || {}).forEach(([k, v]) => {
-    speakerMap[k] = (v && v.user_name) || '未知';
+    speakerMap[k] = (v && v.user_name) || defaultSpeaker;
   });
   return { paragraphToSpeaker: data.paragraph_to_speaker || {}, speakerMap };
 }
 
 async function getSubtitles(baseUrl, token) {
+  const lang = getApiLanguage();
   const data = await callApi(baseUrl, '/minutes/api/subtitles_v2', {
     paragraph_id: '',
     size: 10000,
@@ -77,7 +98,7 @@ async function getSubtitles(baseUrl, token) {
     is_fluent: 'false',
     filter_speaker: 'true',
     object_token: token,
-    language: 'zh_cn',
+    language: lang,
   });
   return data.paragraphs || [];
 }
@@ -99,12 +120,14 @@ function safeFilename(name) {
 }
 
 function buildMarkdown(meetingName, paragraphToSpeaker, speakerMap, paragraphs) {
+  const defaultTitle = getMessage('defaultMeetingTitle', '飞书妙记转写');
+  const unknownSpeaker = getMessage('speakerUnknown', '未知');
   const lines = [];
-  lines.push(`# ${meetingName || '飞书妙记转写'}\n`);
+  lines.push(`# ${meetingName || defaultTitle}\n`);
   for (const p of paragraphs) {
     const pid = p.pid;
     const speakerId = paragraphToSpeaker[pid];
-    const speaker = speakerMap[speakerId] || '未知';
+    const speaker = speakerMap[speakerId] || unknownSpeaker;
     const start = p.start_time || 0;
     let text = '';
     for (const sent of p.sentences || []) {
@@ -122,7 +145,7 @@ function buildMarkdown(meetingName, paragraphToSpeaker, speakerMap, paragraphs) 
 
 async function exportMinutes(url) {
   const hostMatch = url.match(BASE_HOST_RE);
-  if (!hostMatch) throw new Error('无法识别飞书域名');
+  if (!hostMatch) throw new Error(getMessage('errUnrecognizedDomain', '无法识别飞书域名'));
   const baseUrl = hostMatch[1];
 
   const token = getToken(url);
@@ -158,11 +181,13 @@ async function exportMinutes(url) {
   return { filename };
 }
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.type !== 'export') return;
-  exportMinutes(msg.url)
-    .then((result) => sendResponse({ ok: true, filename: result.filename }))
-    .catch((err) => sendResponse({ ok: false, error: err.message }));
-  // 必须返回 true 表示异步响应
-  return true;
-});
+if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.type !== 'export') return;
+    exportMinutes(msg.url)
+      .then((result) => sendResponse({ ok: true, filename: result.filename }))
+      .catch((err) => sendResponse({ ok: false, error: err.message }));
+    // 必须返回 true 表示异步响应
+    return true;
+  });
+}

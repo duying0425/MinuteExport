@@ -1,0 +1,114 @@
+{
+  "extName": {
+    "message": "飞书妙记导出",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "一键导出飞书妙记会议转写为 Markdown 格式，自动使用会议名称作为文件名。",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "飞书妙记导出",
+    "description": "Popup title header"
+  },
+  "popupUrlLabel": {
+    "message": "妙记链接",
+    "description": "Popup label for URL input"
+  },
+  "popupUrlPlaceholder": {
+    "message": "https://reachauto.feishu.cn/minutes/xxxx",
+    "description": "Popup placeholder for URL input"
+  },
+  "popupExportBtn": {
+    "message": "导出为 Markdown",
+    "description": "Popup export button text"
+  },
+  "popupEmptyUrlErr": {
+    "message": "请填入妙记链接",
+    "description": "Error when URL input is empty"
+  },
+  "popupInvalidUrlErr": {
+    "message": "链接格式不对，需要是 https://xxx.feishu.cn/minutes/xxx",
+    "description": "Error when URL format is invalid"
+  },
+  "popupExporting": {
+    "message": "正在导出…",
+    "description": "Status text while exporting"
+  },
+  "popupSuccess": {
+    "message": "完成：",
+    "description": "Status text prefix on success"
+  },
+  "popupFailed": {
+    "message": "失败：",
+    "description": "Status text prefix on failure"
+  },
+  "btnExport": {
+    "message": "📥 导出妙记",
+    "description": "Floating export button text"
+  },
+  "btnExporting": {
+    "message": "正在导出…",
+    "description": "Floating export button status text"
+  },
+  "tipDownloaded": {
+    "message": "✅ 已下载：",
+    "description": "Tip message prefix when downloaded"
+  },
+  "tipFailed": {
+    "message": "❌ 失败：",
+    "description": "Tip message prefix when failed"
+  },
+  "tipUnknownErr": {
+    "message": "未知错误",
+    "description": "Default unknown error text"
+  },
+  "listBtnTitle": {
+    "message": "直接下载 Markdown",
+    "description": "List page icon button tooltip"
+  },
+  "errNoMeetingLink": {
+    "message": "未找到会议链接",
+    "description": "Alert message when meeting link is missing"
+  },
+  "errParseToken": {
+    "message": "无法解析会议Token",
+    "description": "Alert message when token parsing fails"
+  },
+  "errNoMenuBtn": {
+    "message": "未找到操作菜单按钮",
+    "description": "Alert message when menu button is missing"
+  },
+  "errMenuTimeout": {
+    "message": "打开菜单超时，未找到“查看妙记”或“打开妙记”选项",
+    "description": "Alert message when opening menu times out"
+  },
+  "errUnknownLink": {
+    "message": "未知的链接类型：",
+    "description": "Alert message for unknown link"
+  },
+  "errTriggerDownload": {
+    "message": "触发下载失败：",
+    "description": "Console error prefix for trigger download"
+  },
+  "errDownloadFailed": {
+    "message": "下载失败：",
+    "description": "Alert message for download failure"
+  },
+  "defaultMeetingTitle": {
+    "message": "飞书妙记转写",
+    "description": "Default markdown meeting title if none found"
+  },
+  "speakerUnknown": {
+    "message": "未知",
+    "description": "Default speaker name if unmapped"
+  },
+  "errParseTokenBg": {
+    "message": "无法从链接解析 object_token",
+    "description": "Error in background script when parsing token fails"
+  },
+  "errUnrecognizedDomain": {
+    "message": "无法识别飞书域名",
+    "description": "Error in background script when domain unrecognized"
+  }
+}

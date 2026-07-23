@@ -1,0 +1,114 @@
+{
+  "extName": {
+    "message": "Feishu Minutes Exporter",
+    "description": "Extension name"
+  },
+  "extDescription": {
+    "message": "Export Feishu Minutes (飞书妙记) meeting transcripts to Markdown with one click. Automatically uses the meeting name as the filename.",
+    "description": "Extension description"
+  },
+  "popupTitle": {
+    "message": "Feishu Minutes Exporter",
+    "description": "Popup title header"
+  },
+  "popupUrlLabel": {
+    "message": "Minutes URL",
+    "description": "Popup label for URL input"
+  },
+  "popupUrlPlaceholder": {
+    "message": "https://reachauto.feishu.cn/minutes/xxxx",
+    "description": "Popup placeholder for URL input"
+  },
+  "popupExportBtn": {
+    "message": "Export to Markdown",
+    "description": "Popup export button text"
+  },
+  "popupEmptyUrlErr": {
+    "message": "Please enter a Feishu Minutes link",
+    "description": "Error when URL input is empty"
+  },
+  "popupInvalidUrlErr": {
+    "message": "Invalid URL format. Must be https://xxx.feishu.cn/minutes/xxx",
+    "description": "Error when URL format is invalid"
+  },
+  "popupExporting": {
+    "message": "Exporting...",
+    "description": "Status text while exporting"
+  },
+  "popupSuccess": {
+    "message": "Completed: ",
+    "description": "Status text prefix on success"
+  },
+  "popupFailed": {
+    "message": "Failed: ",
+    "description": "Status text prefix on failure"
+  },
+  "btnExport": {
+    "message": "📥 Export Minutes",
+    "description": "Floating export button text"
+  },
+  "btnExporting": {
+    "message": "Exporting...",
+    "description": "Floating export button status text"
+  },
+  "tipDownloaded": {
+    "message": "✅ Downloaded: ",
+    "description": "Tip message prefix when downloaded"
+  },
+  "tipFailed": {
+    "message": "❌ Failed: ",
+    "description": "Tip message prefix when failed"
+  },
+  "tipUnknownErr": {
+    "message": "Unknown error",
+    "description": "Default unknown error text"
+  },
+  "listBtnTitle": {
+    "message": "Direct Download Markdown",
+    "description": "List page icon button tooltip"
+  },
+  "errNoMeetingLink": {
+    "message": "Meeting link not found",
+    "description": "Alert message when meeting link is missing"
+  },
+  "errParseToken": {
+    "message": "Failed to parse meeting Token",
+    "description": "Alert message when token parsing fails"
+  },
+  "errNoMenuBtn": {
+    "message": "Action menu button not found",
+    "description": "Alert message when menu button is missing"
+  },
+  "errMenuTimeout": {
+    "message": "Menu timeout: 'View Minutes' or 'Open Minutes' option not found",
+    "description": "Alert message when opening menu times out"
+  },
+  "errUnknownLink": {
+    "message": "Unknown link type: ",
+    "description": "Alert message for unknown link"
+  },
+  "errTriggerDownload": {
+    "message": "Failed to trigger download: ",
+    "description": "Console error prefix for trigger download"
+  },
+  "errDownloadFailed": {
+    "message": "Download failed: ",
+    "description": "Alert message for download failure"
+  },
+  "defaultMeetingTitle": {
+    "message": "Feishu Minutes Transcript",
+    "description": "Default markdown meeting title if none found"
+  },
+  "speakerUnknown": {
+    "message": "Unknown",
+    "description": "Default speaker name if unmapped"
+  },
+  "errParseTokenBg": {
+    "message": "Failed to parse object_token from URL",
+    "description": "Error in background script when parsing token fails"
+  },
+  "errUnrecognizedDomain": {
+    "message": "Unrecognized Feishu domain",
+    "description": "Error in background script when domain unrecognized"
+  }
+}

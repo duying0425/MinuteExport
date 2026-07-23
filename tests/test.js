@@ -481,6 +481,38 @@ test('getExportTargetUrl 在列表页返回 null', function() {
 });
 
 // ============================================================================
+// 3.5. manifest.json 与 i18n 语言包测试
+// ============================================================================
+console.log('\n========================================');
+console.log('manifest.json 与 i18n 语言包测试');
+console.log('========================================\n');
+
+test('manifest.json 格式与 1.3.0 版本校验', function() {
+  const manifestPath = path.join(__dirname, '..', 'extension', 'manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  assert.strictEqual(manifest.version, '1.3.0');
+  assert.strictEqual(manifest.default_locale, 'zh_CN');
+  assert.strictEqual(manifest.name, '__MSG_extName__');
+  assert.strictEqual(manifest.description, '__MSG_extDescription__');
+});
+
+test('zh_CN 与 en 语言包 JSON 完整性及 Key 对齐校验', function() {
+  const zhPath = path.join(__dirname, '..', 'extension', '_locales', 'zh_CN', 'messages.json');
+  const enPath = path.join(__dirname, '..', 'extension', '_locales', 'en', 'messages.json');
+  const zhMsgs = JSON.parse(fs.readFileSync(zhPath, 'utf8'));
+  const enMsgs = JSON.parse(fs.readFileSync(enPath, 'utf8'));
+
+  const zhKeys = Object.keys(zhMsgs).sort();
+  const enKeys = Object.keys(enMsgs).sort();
+
+  assert.deepStrictEqual(zhKeys, enKeys, 'zh_CN 与 en 语言包的 Key 集合必须完全一致');
+  zhKeys.forEach(k => {
+    assert(zhMsgs[k].message, `zh_CN 缺少 ${k}.message`);
+    assert(enMsgs[k].message, `en 缺少 ${k}.message`);
+  });
+});
+
+// ============================================================================
 // 4. 静态分析：已知问题与边界情况
 // ============================================================================
 console.log('\n========================================');

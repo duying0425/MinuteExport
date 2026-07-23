@@ -3,6 +3,14 @@
 if (!window.__feishuMinutesExportInjected) {
   window.__feishuMinutesExportInjected = true;
 
+  function getMessage(key, fallback) {
+    if (typeof chrome !== 'undefined' && chrome.i18n && typeof chrome.i18n.getMessage === 'function') {
+      const msg = chrome.i18n.getMessage(key);
+      if (msg) return msg;
+    }
+    return fallback;
+  }
+
   let btnEl = null;      // 当前挂载 of the root element
   let styleEl = null;    // injected style
   let lastShown = false; // current visibility of the details page floating button
@@ -201,7 +209,7 @@ if (!window.__feishuMinutesExportInjected) {
     const root = document.createElement('div');
     root.id = '__feishu_minutes_export_btn';
     root.innerHTML = `
-      <button id="__fme_action">📥 导出妙记</button>
+      <button id="__fme_action">${getMessage('btnExport', '📥 导出妙记')}</button>
       <div id="__fme_tip"></div>
     `;
     (document.body || document.documentElement).appendChild(root);
@@ -210,17 +218,17 @@ if (!window.__feishuMinutesExportInjected) {
     const tip = root.querySelector('#__fme_tip');
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      showTip('正在导出…', '');
+      showTip(getMessage('btnExporting', '正在导出…'), '');
       try {
         const exportUrl = activeTargetUrl || location.href;
         const result = await chrome.runtime.sendMessage({ type: 'export', url: exportUrl });
         if (result && result.ok) {
-          showTip('✅ 已下载：' + result.filename, 'ok');
+          showTip(getMessage('tipDownloaded', '✅ 已下载：') + result.filename, 'ok');
         } else {
-          showTip('❌ 失败：' + (result && result.error ? result.error : '未知错误'), 'error');
+          showTip(getMessage('tipFailed', '❌ 失败：') + (result && result.error ? result.error : getMessage('tipUnknownErr', '未知错误')), 'error');
         }
       } catch (e) {
-        showTip('❌ 失败：' + e.message, 'error');
+        showTip(getMessage('tipFailed', '❌ 失败：') + e.message, 'error');
       } finally {
         btn.disabled = false;
       }
@@ -253,7 +261,7 @@ if (!window.__feishuMinutesExportInjected) {
 
       const btn = document.createElement('button');
       btn.className = '__fme_list_download_btn';
-      btn.title = '直接下载 Markdown';
+      btn.title = getMessage('listBtnTitle', '直接下载 Markdown');
       btn.innerHTML = `
         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M12 16L7 11H10V4H14V11H17L12 16Z" fill="currentColor"/>
@@ -271,7 +279,7 @@ if (!window.__feishuMinutesExportInjected) {
         try {
           const linkEl = row.querySelector('a.meeting-list-item');
           if (!linkEl) {
-            alert('未找到会议链接');
+            alert(getMessage('errNoMeetingLink', '未找到会议链接'));
             return;
           }
 
@@ -282,12 +290,12 @@ if (!window.__feishuMinutesExportInjected) {
               localStorage.setItem('auto_download_' + token, 'true');
               window.open(href, '_blank');
             } else {
-              alert('无法解析会议Token');
+              alert(getMessage('errParseToken', '无法解析会议Token'));
             }
           } else if (href.includes('/docx/')) {
             const menuBtn = row.querySelector('.meeting-menu-btn');
             if (!menuBtn) {
-              alert('未找到操作菜单按钮');
+              alert(getMessage('errNoMenuBtn', '未找到操作菜单按钮'));
               return;
             }
             const targetBtn = menuBtn.querySelector('.meeting-list-item-action-icon') || menuBtn;
@@ -302,14 +310,14 @@ if (!window.__feishuMinutesExportInjected) {
             const maxAttempts = 40;
             const pollInterval = setInterval(() => {
               attempts++;
-              const openMinutesOption = findMenuOption('查看妙记') || findMenuOption('打开妙记');
+              const openMinutesOption = findMenuOption('查看妙记') || findMenuOption('打开妙记') || findMenuOption('View Minutes') || findMenuOption('Open Minutes');
               if (openMinutesOption) {
                 clearInterval(pollInterval);
                 localStorage.setItem('auto_download_any_next', 'true');
                 simulateClick(openMinutesOption);
               } else if (attempts >= maxAttempts) {
                 clearInterval(pollInterval);
-                alert('打开菜单超时，未找到“查看妙记”或“打开妙记”选项');
+                alert(getMessage('errMenuTimeout', '打开菜单超时，未找到“查看妙记”或“打开妙记”选项'));
               }
               if (attempts >= maxAttempts || openMinutesOption) {
                 btn.style.opacity = '1';
@@ -318,11 +326,11 @@ if (!window.__feishuMinutesExportInjected) {
             }, 50);
             return;
           } else {
-            alert('未知的链接类型：' + href);
+            alert(getMessage('errUnknownLink', '未知的链接类型：') + href);
           }
         } catch (err) {
           console.error('[飞书妙记导出] 触发下载失败:', err);
-          alert('下载失败: ' + err.message);
+          alert(getMessage('errDownloadFailed', '下载失败: ') + err.message);
         }
 
         setTimeout(() => {
