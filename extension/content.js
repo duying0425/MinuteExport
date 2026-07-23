@@ -140,7 +140,63 @@ if (!window.__feishuMinutesExportInjected) {
     return candidates[0];
   }
 
-  function mountButton() {
+  function findMinuteUrlInPage() {
+    const listPages = ['me', 'home', 'shared', 'trash', 'space', 'list'];
+
+    // 1. 高效引擎匹配：使用原生 C++ CSS 选择器查找 a 标签、iframe 和 data-url 属性
+    if (document.querySelectorAll) {
+      const anchors = Array.from(document.querySelectorAll('a[href*="/minutes/"]'));
+      const iframes = Array.from(document.querySelectorAll('iframe[src*="/minutes/"]'));
+      const dataEls = Array.from(document.querySelectorAll('[data-url*="/minutes/"]'));
+      const elements = [...anchors, ...iframes, ...dataEls];
+      for (const el of elements) {
+        const rawUrl = el.href || el.src || el.getAttribute('data-url') || el.getAttribute('href') || '';
+        const m = rawUrl.match(/\/minutes\/([a-zA-Z0-9]+)/);
+        if (m && !listPages.includes(m[1].toLowerCase())) {
+          if (rawUrl.startsWith('http')) return rawUrl;
+          return location.origin + '/minutes/' + m[1];
+        }
+      }
+    }
+
+    // 2. 只有在按钮未挂载时，才在 HTML 源码中兜底查找（已挂载时跳过，零性能损耗）
+    if (!btnEl) {
+      const html = ((document.body && document.body.innerHTML) || '') + ((document.head && document.head.innerHTML) || '');
+      const matches = html.match(/\/minutes\/([a-zA-Z0-9]{15,})/gi);
+      if (matches) {
+        for (const rawMatch of matches) {
+          const tokenMatch = rawMatch.match(/\/minutes\/([a-zA-Z0-9]+)/i);
+          if (tokenMatch) {
+            const token = tokenMatch[1];
+            if (!listPages.includes(token.toLowerCase())) {
+              return location.origin + '/minutes/' + token;
+            }
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function getExportTargetUrl() {
+    if (isMinutesDetailPage()) {
+      return location.href;
+    }
+    if (isListPage()) {
+      return null;
+    }
+    // 若按钮已挂载且目标 URL 存在，直接复用，避免重复计算
+    if (btnEl && activeTargetUrl) {
+      return activeTargetUrl;
+    }
+    return findMinuteUrlInPage();
+  }
+
+  let activeTargetUrl = null;
+
+  function mountButton(targetUrl) {
+    activeTargetUrl = targetUrl;
     if (btnEl) return;
     const root = document.createElement('div');
     root.id = '__feishu_minutes_export_btn';
@@ -156,7 +212,8 @@ if (!window.__feishuMinutesExportInjected) {
       btn.disabled = true;
       showTip('正在导出…', '');
       try {
-        const result = await chrome.runtime.sendMessage({ type: 'export', url: location.href });
+        const exportUrl = activeTargetUrl || location.href;
+        const result = await chrome.runtime.sendMessage({ type: 'export', url: exportUrl });
         if (result && result.ok) {
           showTip('✅ 已下载：' + result.filename, 'ok');
         } else {
@@ -175,7 +232,7 @@ if (!window.__feishuMinutesExportInjected) {
     }
 
     btnEl = root;
-    console.log('[飞书妙记导出] 按钮已挂载 @', location.href);
+    console.log('[飞书妙记导出] 按钮已挂载 @', location.href, '目标 URL:', targetUrl);
   }
 
   function unmountButton() {
@@ -324,12 +381,17 @@ if (!window.__feishuMinutesExportInjected) {
     }
   }
 
-  // 定时检查 URL（妙记是 SPA，路由变化不会重新注入 content script）
+  // 定时检查 URL（妙记/文档是 SPA，路由变化不会重新注入 content script）
   function check() {
-    const should = isMinutesDetailPage();
-    if (should && !lastShown) mountButton();
-    else if (!should && lastShown) unmountButton();
-    lastShown = should;
+    const targetUrl = getExportTargetUrl();
+    if (targetUrl) {
+      activeTargetUrl = targetUrl;
+      if (!lastShown) mountButton(targetUrl);
+    } else {
+      activeTargetUrl = null;
+      if (lastShown) unmountButton();
+    }
+    lastShown = !!targetUrl;
 
     // 检查列表页的按钮注入
     if (isListPage()) {
@@ -337,7 +399,7 @@ if (!window.__feishuMinutesExportInjected) {
     }
 
     // 检查是否有自动下载的命令
-    if (should) {
+    if (isMinutesDetailPage()) {
       checkAutoDownload();
     }
   }
