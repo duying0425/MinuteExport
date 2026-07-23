@@ -224,11 +224,23 @@ async function exportMinutes(url) {
 
 if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.type !== 'export') return;
-    exportMinutes(msg.url)
-      .then((result) => sendResponse({ ok: true, filename: result.filename }))
-      .catch((err) => sendResponse({ ok: false, error: err.message }));
-    // 必须返回 true 表示异步响应
-    return true;
+    if (msg.type === 'export') {
+      exportMinutes(msg.url)
+        .then((result) => sendResponse({ ok: true, filename: result.filename }))
+        .catch((err) => sendResponse({ ok: false, error: err.message }));
+      return true;
+    }
+    if (msg.type === 'checkDocxHasMinutes') {
+      const hostMatch = msg.url.match(BASE_HOST_RE);
+      const docxMatch = msg.url && msg.url.match(/\/(docx|docs|wiki)\/([a-zA-Z0-9]+)/i);
+      if (!hostMatch || !docxMatch) {
+        sendResponse({ hasMinutes: false });
+        return true;
+      }
+      getMinutesTokenFromDocx(hostMatch[1], docxMatch[2])
+        .then((token) => sendResponse({ hasMinutes: true, token, targetUrl: hostMatch[1] + '/minutes/' + token }))
+        .catch(() => sendResponse({ hasMinutes: false }));
+      return true;
+    }
   });
 }

@@ -230,13 +230,7 @@ if (!window.__feishuMinutesExportInjected) {
     const found = findMinuteUrlInPage();
     if (found) return found;
 
-    // 若为云文档页面（/docx/ /docs/ /wiki/），即使 DOM 尚未滚动出妙记卡片，
-    // 也立即挂载按钮，由 Service Worker 在导出时通过 API 解析 Block 结构
-    if (isDocxPage()) {
-      return location.href;
-    }
-
-    return activeTargetUrl;
+    return null;
   }
 
   let activeTargetUrl = null;
@@ -427,17 +421,50 @@ if (!window.__feishuMinutesExportInjected) {
     }
   }
 
+  let checkingDocxToken = null;
+
+  function checkDocxTarget(docxUrl) {
+    if (!isDocxPage()) return;
+    const docxMatch = docxUrl.match(/\/(docx|docs|wiki)\/([a-zA-Z0-9]+)/i);
+    if (!docxMatch) return;
+    const token = docxMatch[2];
+    if (checkingDocxToken === token) return;
+    checkingDocxToken = token;
+
+    if (typeof chrome !== 'undefined' && chrome.runtime && typeof chrome.runtime.sendMessage === 'function') {
+      chrome.runtime.sendMessage({ type: 'checkDocxHasMinutes', url: docxUrl }, (res) => {
+        if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.lastError) return;
+        if (res && res.hasMinutes && res.targetUrl) {
+          activeTargetUrl = res.targetUrl;
+          if (!lastShown) mountButton(res.targetUrl);
+          lastShown = true;
+        } else {
+          if (location.href === docxUrl && !activeTargetUrl) {
+            unmountButton();
+            lastShown = false;
+          }
+        }
+      });
+    }
+  }
+
   // 定时检查 URL（妙记/文档是 SPA，路由变化不会重新注入 content script）
   function check() {
     const targetUrl = getExportTargetUrl();
     if (targetUrl) {
       activeTargetUrl = targetUrl;
       if (!lastShown) mountButton(targetUrl);
+      lastShown = true;
     } else {
       activeTargetUrl = null;
       if (lastShown) unmountButton();
+      lastShown = false;
+
+      // 如果是在云文档页面，异步触发后端 API 检查是否包含关联的妙记
+      if (isDocxPage()) {
+        checkDocxTarget(location.href);
+      }
     }
-    lastShown = !!targetUrl;
 
     // 检查列表页的按钮注入
     if (isListPage()) {
