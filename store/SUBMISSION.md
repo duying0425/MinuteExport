@@ -1,6 +1,6 @@
 # Edge Add-ons / Chrome Web Store Submission Guide (商店发布指南)
 
-This document contains all bilingual (English & Simplified Chinese) texts and metadata required for submitting **Feishu Minutes Exporter (飞书妙记导出)** v1.3.0 to the Microsoft Edge Add-ons Store and Chrome Web Store.
+This document contains all bilingual (English & Simplified Chinese) texts and metadata required for submitting **Feishu Minutes Exporter (飞书妙记导出)** v1.4.0 to the Microsoft Edge Add-ons Store and Chrome Web Store.
 
 ---
 
@@ -52,7 +52,7 @@ The Feishu web interface has no built-in export button for meeting transcripts. 
 • 100% local processing — no third-party servers
 
 ★ How to use
-1. Open a Feishu Minutes page (https://*.feishu.cn/minutes/...) or a Feishu Cloud Document (https://*.feishu.cn/docx/...)
+1. Open a Feishu Minutes page or a Feishu Cloud Document
 2. Click the extension toolbar icon or the floating "📥 Export Minutes" button in the bottom right corner
 3. Markdown file downloads automatically
 
@@ -88,7 +88,7 @@ https://github.com/duying0425/MinuteExport
 • 100% 本地转换处理，绝不出售或上传任何用户隐私数据
 
 ★ 使用方法
-1. 打开任意飞书妙记页面 (https://*.feishu.cn/minutes/...) 或飞书云文档页面 (https://*.feishu.cn/docx/...)
+1. 打开任意飞书妙记页面或飞书云文档页面
 2. 点击浏览器工具栏插件图标，或页面右下角的“📥 导出妙记”浮动按钮
 3. 系统将自动下载格式化好的 Markdown 文件
 
@@ -213,11 +213,11 @@ This extension exports Feishu Minutes (飞书妙记) meeting transcripts to Mark
 
 Test steps:
 1. Log in to https://feishu.cn in the browser.
-2. Open any Feishu Minutes page (https://*.feishu.cn/minutes/...) or Feishu Cloud Document (https://*.feishu.cn/docx/...).
+2. Open any Feishu Minutes page or Feishu Cloud Document.
 3. Click the extension toolbar icon or the bottom-right "📥 Export Minutes" button.
 4. A Markdown file will be downloaded, named after the meeting title.
 
-Features in v1.3.0:
+Features in v1.4.0:
 - Full English and Simplified Chinese bilingual support automatically matched with browser locale.
 - Zero-scroll Docx resolution: Extracts embedded Minutes tokens via Feishu Docx block APIs directly without requiring user scroll.
 ```
@@ -228,11 +228,11 @@ Features in v1.3.0:
 
 测试步骤：
 1. 在浏览器中登录 https://feishu.cn 账号。
-2. 打开任意飞书妙记页面 (https://*.feishu.cn/minutes/...) 或飞书云文档页面 (https://*.feishu.cn/docx/...)。
+2. 打开任意飞书妙记页面或飞书云文档页面。
 3. 点击插件工具栏图标或页面右下角的“📥 导出妙记”按钮。
 4. 格式化好的 Markdown 文件将自动保存至本地。
 
-v1.3.0 新增功能：
+v1.4.0 新增功能：
 - 完整支持中英文双语界面，根据浏览器语言环境自动切换。
 - 支持云文档零滚动识别：通过飞书 Docx API 直接提取嵌套的妙记 Token，无需滚动页面即可完成导出。
 ```
@@ -252,4 +252,5 @@ Productivity / 生产力
 | Version | Date | Status | Highlights |
 |---|---|---|---|
 | 1.2.0 | 2026-07-07 | Released | Single-click export for Feishu Minutes pages |
-| 1.3.0 | 2026-07-23 | Ready for submission | Full bilingual (zh_CN/en) i18n support & zero-scroll Docx API resolution |
+| 1.3.0 | 2026-07-23 | Released | Full bilingual (zh_CN/en) i18n support & zero-scroll Docx API resolution |
+| 1.4.0 | 2026-07-23 | Ready for submission | Version 1.4.0 release |

@@ -507,10 +507,10 @@ console.log('\n========================================');
 console.log('manifest.json 与 i18n 语言包测试');
 console.log('========================================\n');
 
-test('manifest.json 格式与 1.3.0 版本校验', function() {
+test('manifest.json 格式与 1.4.0 版本校验', function() {
   const manifestPath = path.join(__dirname, '..', 'extension', 'manifest.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-  assert.strictEqual(manifest.version, '1.3.0');
+  assert.strictEqual(manifest.version, '1.4.0');
   assert.strictEqual(manifest.default_locale, 'zh_CN');
   assert.strictEqual(manifest.name, '__MSG_extName__');
   assert.strictEqual(manifest.description, '__MSG_extDescription__');
