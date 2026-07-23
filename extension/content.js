@@ -111,6 +111,11 @@ if (!window.__feishuMinutesExportInjected) {
     return listPages.includes(token);
   }
 
+  function isDocxPage() {
+    const path = location.pathname;
+    return /^\/(docx|docs|wiki)\/([a-zA-Z0-9]+)/i.test(path);
+  }
+
   function getToken(url) {
     const m = url.match(/\/minutes\/([a-zA-Z0-9]+)/);
     return m ? m[1] : null;
@@ -148,36 +153,64 @@ if (!window.__feishuMinutesExportInjected) {
     return candidates[0];
   }
 
+  function getOrigin() {
+    if (typeof location !== 'undefined' && location.origin && location.origin !== 'null' && location.origin !== 'undefined') {
+      return location.origin;
+    }
+    if (typeof location !== 'undefined' && location.href) {
+      try { return new URL(location.href).origin; } catch (e) {}
+    }
+    return 'https://reachauto.feishu.cn';
+  }
+
   function findMinuteUrlInPage() {
     const listPages = ['me', 'home', 'shared', 'trash', 'space', 'list'];
 
-    // 1. 高效引擎匹配：使用原生 C++ CSS 选择器查找 a 标签、iframe 和 data-url 属性
+    // 1. 高效 DOM 节点选择器匹配 (支持 href, src, data-url, data-href, data-raw-href, data-link)
     if (document.querySelectorAll) {
-      const anchors = Array.from(document.querySelectorAll('a[href*="/minutes/"]'));
-      const iframes = Array.from(document.querySelectorAll('iframe[src*="/minutes/"]'));
-      const dataEls = Array.from(document.querySelectorAll('[data-url*="/minutes/"]'));
-      const elements = [...anchors, ...iframes, ...dataEls];
+      const selectors = [
+        'a[href*="/minutes/"]',
+        'a[data-href*="/minutes/"]',
+        'iframe[src*="/minutes/"]',
+        '[data-url*="/minutes/"]',
+        '[data-href*="/minutes/"]',
+        '[data-raw-href*="/minutes/"]',
+        '[data-link*="/minutes/"]'
+      ];
+      const elements = Array.from(document.querySelectorAll(selectors.join(',')));
       for (const el of elements) {
-        const rawUrl = el.href || el.src || el.getAttribute('data-url') || el.getAttribute('href') || '';
-        const m = rawUrl.match(/\/minutes\/([a-zA-Z0-9]+)/);
+        const rawUrl = el.href || el.getAttribute('data-href') || el.src || el.getAttribute('data-url') || el.getAttribute('data-raw-href') || el.getAttribute('data-link') || el.getAttribute('href') || '';
+        const m = rawUrl.match(/(?:\\\/|\/|%2F)minutes(?:\\\/|\/|%2F)([a-zA-Z0-9]+)/i);
         if (m && !listPages.includes(m[1].toLowerCase())) {
-          if (rawUrl.startsWith('http')) return rawUrl;
-          return location.origin + '/minutes/' + m[1];
+          if (rawUrl.startsWith('http') && !rawUrl.includes('\\/')) return rawUrl;
+          return getOrigin() + '/minutes/' + m[1];
         }
       }
     }
 
-    // 2. 只有在按钮未挂载时，才在 HTML 源码中兜底查找（已挂载时跳过，零性能损耗）
-    if (!btnEl) {
-      const html = ((document.body && document.body.innerHTML) || '') + ((document.head && document.head.innerHTML) || '');
-      const matches = html.match(/\/minutes\/([a-zA-Z0-9]{15,})/gi);
+    // 2. 只有在按钮未挂载或未检测到目标时，全局 HTML 源码 + JS 内存数据深度匹配
+    if (!btnEl || !activeTargetUrl) {
+      let fullHtml = (document.documentElement && document.documentElement.innerHTML) || '';
+      
+      // 深度提取页面全局内存数据 (如 window.clientVars, SSR_DATA, __INITIAL_STATE__)
+      try {
+        if (typeof window !== 'undefined') {
+          if (window.clientVars) fullHtml += JSON.stringify(window.clientVars);
+          if (window.SSR_DATA) fullHtml += JSON.stringify(window.SSR_DATA);
+          if (window.__INITIAL_STATE__) fullHtml += JSON.stringify(window.__INITIAL_STATE__);
+        }
+      } catch (e) {}
+
+      // 支持普通斜杠 /minutes/、JSON 转义斜杠 \/minutes\/ 以及 URL 编码 %2Fminutes%2F
+      const regex = /(?:\\\/|\/|%2F)minutes(?:\\\/|\/|%2F)([a-zA-Z0-9]{15,})/gi;
+      const matches = fullHtml.match(regex);
       if (matches) {
         for (const rawMatch of matches) {
-          const tokenMatch = rawMatch.match(/\/minutes\/([a-zA-Z0-9]+)/i);
+          const tokenMatch = rawMatch.match(/(?:\\\/|\/|%2F)minutes(?:\\\/|\/|%2F)([a-zA-Z0-9]+)/i);
           if (tokenMatch) {
             const token = tokenMatch[1];
             if (!listPages.includes(token.toLowerCase())) {
-              return location.origin + '/minutes/' + token;
+              return getOrigin() + '/minutes/' + token;
             }
           }
         }
@@ -194,11 +227,16 @@ if (!window.__feishuMinutesExportInjected) {
     if (isListPage()) {
       return null;
     }
-    // 若按钮已挂载且目标 URL 存在，直接复用，避免重复计算
-    if (btnEl && activeTargetUrl) {
-      return activeTargetUrl;
+    const found = findMinuteUrlInPage();
+    if (found) return found;
+
+    // 若为云文档页面（/docx/ /docs/ /wiki/），即使 DOM 尚未滚动出妙记卡片，
+    // 也立即挂载按钮，由 Service Worker 在导出时通过 API 解析 Block 结构
+    if (isDocxPage()) {
+      return location.href;
     }
-    return findMinuteUrlInPage();
+
+    return activeTargetUrl;
   }
 
   let activeTargetUrl = null;

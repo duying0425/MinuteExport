@@ -110,5 +110,9 @@
   "errUnrecognizedDomain": {
     "message": "Unrecognized Feishu domain",
     "description": "Error in background script when domain unrecognized"
+  },
+  "errNoDocxMinutesToken": {
+    "message": "No associated Feishu Minutes card found in document. Please ensure the document contains a Minutes link.",
+    "description": "Error when docx API cannot find embedded minutes token"
   }
 }

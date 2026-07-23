@@ -143,12 +143,53 @@ function buildMarkdown(meetingName, paragraphToSpeaker, speakerMap, paragraphs) 
   return lines.join('\n');
 }
 
+async function getMinutesTokenFromDocx(baseUrl, docxToken) {
+  // 1. 尝试调用 Feishu Docx Pages Block API
+  try {
+    const data = await callApi(baseUrl, `/space/api/docx/pages/${docxToken}/blocks`, { size: 500 });
+    const jsonStr = JSON.stringify(data);
+    const m = jsonStr.match(/(?:\\\/|\/|%2F)minutes(?:\\\/|\/|%2F)([a-zA-Z0-9]+)/i);
+    if (m && m[1]) return m[1];
+  } catch (e) {
+    console.warn('Docx blocks API 提取失败:', e);
+  }
+
+  // 2. 尝试调用 get_doc_by_token API (type=22 表示 docx)
+  try {
+    const data = await callApi(baseUrl, '/space/api/box/stream/get_doc_by_token/', { token: docxToken, type: 22 });
+    const jsonStr = JSON.stringify(data);
+    const m = jsonStr.match(/(?:\\\/|\/|%2F)minutes(?:\\\/|\/|%2F)([a-zA-Z0-9]+)/i);
+    if (m && m[1]) return m[1];
+  } catch (e) {
+    console.warn('get_doc_by_token API 提取失败:', e);
+  }
+
+  // 3. 尝试调用 docx client API
+  try {
+    const data = await callApi(baseUrl, '/docx/api/client/by_token/', { token: docxToken });
+    const jsonStr = JSON.stringify(data);
+    const m = jsonStr.match(/(?:\\\/|\/|%2F)minutes(?:\\\/|\/|%2F)([a-zA-Z0-9]+)/i);
+    if (m && m[1]) return m[1];
+  } catch (e) {
+    console.warn('docx client API 提取失败:', e);
+  }
+
+  throw new Error(getMessage('errNoDocxMinutesToken', '未在文档中找到关联的妙记卡片，请确保文档内包含妙记链接'));
+}
+
 async function exportMinutes(url) {
   const hostMatch = url.match(BASE_HOST_RE);
   if (!hostMatch) throw new Error(getMessage('errUnrecognizedDomain', '无法识别飞书域名'));
   const baseUrl = hostMatch[1];
 
-  const token = getToken(url);
+  let token;
+  const docxMatch = url.match(/\/(docx|docs|wiki)\/([a-zA-Z0-9]+)/i);
+  if (docxMatch && !url.includes('/minutes/')) {
+    token = await getMinutesTokenFromDocx(baseUrl, docxMatch[2]);
+  } else {
+    token = getToken(url);
+  }
+
   console.log('object_token:', token);
 
   const meta = await getMeetingName(baseUrl, token);

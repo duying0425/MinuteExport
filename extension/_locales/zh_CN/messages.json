@@ -110,5 +110,9 @@
   "errUnrecognizedDomain": {
     "message": "无法识别飞书域名",
     "description": "Error in background script when domain unrecognized"
+  },
+  "errNoDocxMinutesToken": {
+    "message": "未在文档中找到关联的妙记卡片，请确保文档内包含妙记链接",
+    "description": "Error when docx API cannot find embedded minutes token"
   }
 }

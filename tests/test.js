@@ -39,7 +39,7 @@ bgSandbox.globalThis = bgSandbox;
 const bgCtx = vm.createContext(bgSandbox);
 // 在源码末尾追加导出语句，暴露内部纯函数供测试
 vm.runInContext(
-  bgSrc + '\n;globalThis.__exports = { getToken, formatTime, safeFilename, buildMarkdown, BASE_HOST_RE };',
+  bgSrc + '\n;globalThis.__exports = { getToken, formatTime, safeFilename, buildMarkdown, BASE_HOST_RE, getMinutesTokenFromDocx };',
   bgCtx
 );
 const bg = bgSandbox.__exports;
@@ -53,9 +53,9 @@ let contentSrc = fs.readFileSync(contentPath, 'utf8');
 // 在 IIFE 块结束前注入导出语句（兼容 \r\n 和 \n，末尾可能有空行）
 contentSrc = contentSrc.replace(
   /  check\(\);\r?\n  setInterval\(check, 1000\);\r?\n}\s*$/,
-  '  check();\n  setInterval(check, 1000);\n  globalThis.__exports = { isMinutesDetailPage, isListPage, getToken, findMinuteUrlInPage, getExportTargetUrl };\n}\n'
+  '  check();\n  setInterval(check, 1000);\n  globalThis.__exports = { isMinutesDetailPage, isListPage, isDocxPage, getToken, findMinuteUrlInPage, getExportTargetUrl };\n}\n'
 );
-const mockLocation = { pathname: '/', href: 'https://reachauto.feishu.cn/' };
+const mockLocation = { pathname: '/', href: 'https://reachauto.feishu.cn/', origin: 'https://reachauto.feishu.cn' };
 const contentSandbox = {
   window: { __feishuMinutesExportInjected: false },
   location: mockLocation,
@@ -443,7 +443,7 @@ test('无 <a> 标签且无 HTML 匹配时返回 null', function() {
 test('根据 <a> 标签提取妙记 URL', function() {
   const oldQueryAll = contentSandbox.document.querySelectorAll;
   contentSandbox.document.querySelectorAll = function(selector) {
-    if (selector === 'a[href*="/minutes/"]') {
+    if (selector.includes('a[href*="/minutes/"]')) {
       return [{ href: 'https://reachauto.feishu.cn/minutes/obcny9g35qsfvs2435og62c1?from=ai_minutes', getAttribute: function() { return 'https://reachauto.feishu.cn/minutes/obcny9g35qsfvs2435og62c1?from=ai_minutes'; } }];
     }
     return [];
@@ -455,13 +455,33 @@ test('根据 <a> 标签提取妙记 URL', function() {
 test('忽略列表页 token 链接 (如 /minutes/me)', function() {
   const oldQueryAll = contentSandbox.document.querySelectorAll;
   contentSandbox.document.querySelectorAll = function(selector) {
-    if (selector === 'a[href*="/minutes/"]') {
+    if (selector.includes('a[href*="/minutes/"]')) {
       return [{ href: 'https://reachauto.feishu.cn/minutes/me', getAttribute: function() { return 'https://reachauto.feishu.cn/minutes/me'; } }];
     }
     return [];
   };
   assert.strictEqual(ct.findMinuteUrlInPage(), null);
   contentSandbox.document.querySelectorAll = oldQueryAll;
+});
+
+test('从 data-href 属性提取妙记 URL', function() {
+  const oldQueryAll = contentSandbox.document.querySelectorAll;
+  contentSandbox.document.querySelectorAll = function(selector) {
+    if (selector.includes('[data-href*="/minutes/"]')) {
+      return [{ getAttribute: function(attr) { return attr === 'data-href' ? 'https://reachauto.feishu.cn/minutes/obcny9g35qsfvs2435og62c1' : null; } }];
+    }
+    return [];
+  };
+  assert.strictEqual(ct.findMinuteUrlInPage(), 'https://reachauto.feishu.cn/minutes/obcny9g35qsfvs2435og62c1');
+  contentSandbox.document.querySelectorAll = oldQueryAll;
+});
+
+test('从转义斜杠 HTML 源码与 window.clientVars 提取妙记 URL (无需滚动)', function() {
+  contentSandbox.document.documentElement = {
+    innerHTML: '<script>var data = "https:\\/\\/reachauto.feishu.cn\\/minutes\\/obcny9g35qsfvs2435og62c1";</script>'
+  };
+  assert.strictEqual(ct.findMinuteUrlInPage(), 'https://reachauto.feishu.cn/minutes/obcny9g35qsfvs2435og62c1');
+  contentSandbox.document.documentElement = { appendChild: function() {} };
 });
 
 test('getExportTargetUrl 在妙记详情页返回 location.href', function() {

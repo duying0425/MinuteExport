@@ -24,7 +24,7 @@ if (btn) btn.textContent = getMessage('popupExportBtn', '导出为 Markdown');
 if (typeof chrome !== 'undefined' && chrome.tabs && chrome.tabs.query) {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tabUrl = tabs[0] && tabs[0].url;
-    if (tabUrl && /https:\/\/[^/]+\.feishu\.cn\/minutes\//.test(tabUrl)) {
+    if (tabUrl && /https:\/\/[^/]+\.feishu\.cn\/(minutes|docx|docs|wiki)\//.test(tabUrl)) {
       urlInput.value = tabUrl;
     }
   });
@@ -41,8 +41,8 @@ btn.addEventListener('click', async () => {
     setStatus(getMessage('popupEmptyUrlErr', '请填入妙记链接'), 'error');
     return;
   }
-  if (!/^https:\/\/[^/]+\.feishu\.cn\/minutes\//.test(url)) {
-    setStatus(getMessage('popupInvalidUrlErr', '链接格式不对，需要是 https://xxx.feishu.cn/minutes/xxx'), 'error');
+  if (!/^https:\/\/[^/]+\.feishu\.cn\/(minutes|docx|docs|wiki)\//.test(url)) {
+    setStatus(getMessage('popupInvalidUrlErr', '链接格式不对，需要是 https://xxx.feishu.cn/minutes/xxx 或 /docx/xxx'), 'error');
     return;
   }
 
